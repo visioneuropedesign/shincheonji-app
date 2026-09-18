@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shincheonji Response App - Recognition · Discernment · Action · Evidence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, '나눔고딕', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .language-selector {
+            background: #2c3e50;
+            padding: 12px 20px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: #34495e;
+            color: white;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn:hover {
+            background: #455a64;
+        }
+        
+        .lang-btn.active {
+            background: #e74c3c;
+            border-color: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #f9f9f9;
+        }
+        
+        .tab.active {
+            color: #2c3e50;
+            border-bottom-color: #e74c3c;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 24px;
+            min-height: 600px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section {
+            margin-bottom: 28px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .section h3 {
+            font-size: 15px;
+            color: #2c3e50;
+            margin: 16px 0 10px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .danger-box {
+            background: #fadbd8;
+            border-left: 4px solid #e74c3c;
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .success-box {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .warning-box {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .question-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .question-header {
+            padding: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: #2c3e50;
+            background: #f9f9f9;
+            transition: background 0.3s;
+        }
+        
+        .question-header:hover {
+            background: #f0f0f0;
+        }
+        
+        .question-header.open {
+            background: #e8f4f8;
+            color: #2980b9;
+        }
+        
+        .toggle-icon {
+            font-size: 18px;
+            transition: transform 0.3s;
+        }
+        
+        .question-header.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .question-content {
+            display: none;
+            padding: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .question-content.open {
+            display: block;
+        }
+        
+        .answer-label {
+            font-weight: 600;
+            color: #e74c3c;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .answer-text {
+            color: #555;
+            font-size: 14px;
+            padding: 10px;
+            background: #fff9f5;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .correct-label {
+            font-weight: 600;
+            color: #27ae60;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .correct-text {
+            color: #555;
+            font-size: 14px;
+            padding: 10px;
+            background: #f0f8f4;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 10px 12px;
+            margin: 8px 0;
+            background: #f9f9f9;
+            border-left: 3px solid #3498db;
+            border-radius: 3px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .contact-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            margin: 14px 0;
+            border-radius: 6px;
+        }
+        
+        .contact-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .contact-card p {
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #34495e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+        
+        .red-flag-item {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <button class="lang-btn active" onclick="setLanguage('ko')">한국어</button>
+        <button class="lang-btn" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" onclick="setLanguage('de')">Deutsch</button>
+        <button class="lang-btn" onclick="setLanguage('fr')">Français</button>
+        <button class="lang-btn" onclick="setLanguage('de_ch')">Schweizerdeutsch</button>
+    </div>
+    
+    <div class="header">
+        <h1 id="headerTitle">🛡️ 신천지 대응 앱</h1>
+        <p id="headerSubtitle">인식 · 구별 · 대처 · 증거</p>
+    </div>
+    
+    <div class="tabs" id="tabsContainer">
+        <div class="tab active" onclick="switchTab(0)">인식하기</div>
+        <div class="tab" onclick="switchTab(1)">구별하기</div>
+        <div class="tab" onclick="switchTab(2)">대처하기</div>
+        <div class="tab" onclick="switchTab(3)">유럽현황</div>
+        <div class="tab" onclick="switchTab(4)">교회대응</div>
+    </div>
+    
+    <div class="container">
+        <!-- Tab 1 -->
+        <div class="tab-content active" id="tab0"></div>
+        <!-- Tab 2 -->
+        <div class="tab-content" id="tab1"></div>
+        <!-- Tab 3 -->
+        <div class="tab-content" id="tab2"></div>
+        <!-- Tab 4 -->
+        <div class="tab-content" id="tab3"></div>
+        <!-- Tab 5 -->
+        <div class="tab-content" id="tab4"></div>
+    </div>
+    
+    <div class="footer" id="footer"></div>
+
+    <script>
+        let currentLanguage = 'ko';
+        
+        const translations = {
+            ko: {
+                headerTitle: '🛡️ 신천지 대응 앱',
+                headerSubtitle: '인식 · 구별 · 대처 · 증거',
+                tabNames: ['인식하기', '구별하기', '대처하기', '유럽현황', '교회대응'],
+                footer: '© 2024 신천지 대응 앱 | 기독교 신앙을 지키기 위한 정보 제공',
+                
+                tab0: {
+                    title: '신천지는 무엇인가?',
+                    intro: '신천지(신천지증거장막성전)는 한국 출신의 이단 단체로, 표면상으로는 기독교 교회처럼 보이지만 기독교의 핵심 교리를 거부합니다. 교주 이만희(李萬熙, 1931년생)는 자신이 "새예수"라고 주장하며, 계시록을 자신들만의 방식으로 해석합니다.',
+                    basicInfo: '신천지 기본 정보',
+                    founded: '창립: 1984년',
+                    leader: '교주: 이만희(현재 93세, 구속 중)',
+                    hq: '본부: 한국 경기도',
+                    scale: '규모: 한국 약 10만 명 이상(정확한 통계는 조직 내부 비공개)',
+                    international: '해외 활동: 미국, 호주, 캐나다, 유럽 등 40개국 이상 활동 중',
+                    coreTeachings: '신천지의 6가지 핵심 거짓 교리',
+                    teaching1: '1. 144,000명론',
+                    teaching1Desc: '계시록 7장과 14장의 144,000명을 문자 그대로 해석하여, 신천지의 12지파에 속한 정확히 144,000명만 구원받는다고 주장합니다.',
+                    teaching2: '2. 비유 해석론',
+                    teaching2Desc: '"성경을 비유로만 해석해야 참된 의미를 알 수 있다"고 주장하며, 자신들만이 "참 의미"를 안다고 하여 신자들의 독립적 사고를 차단합니다.',
+                    teaching3: '3. 이만희 메시아주의',
+                    teaching3Desc: '이만희를 "새예수", "약속의 목자", "재림주"라고 부르며, 예수님과 동등하거나 그 이상의 존재로 신격화합니다.',
+                    teaching4: '4. 지역 재해석',
+                    teaching4Desc: '계시록의 지리적 표현들을 한국과 신천지 중심으로 재해석합니다(예: "동방"=한국, "12지파"=신천지의 조직).',
+                    teaching5: '5. 종말론적 절박성',
+                    teaching5Desc: '"이미 재림주가 나타났다"는 주장으로 신자들에게 종말이 임박했다는 심리적 압박을 가합니다. 이는 탈퇴를 막고 헌금과 시간 투자를 강요합니다.',
+                    teaching6: '6. 배도론',
+                    teaching6Desc: '신천지를 제외한 모든 기독교를 "배도한 교회"로 낙인찍으며, 신천지만이 유일한 "참 교회"라고 주장합니다.'
+                },
+                
+                tab1: {
+                    title: '신천지와 정통 기독교 구별하기',
+                    subtitle: '신천지를 구별하는 15가지 질문과 답변',
+                    question: '질문',
+                    shincheonjiClaim: '신천지의 주장',
+                    dangerousReason: '위험한 이유',
+                    christianAnswer: '기독교적 답변'
+                },
+                
+                tab2: {
+                    title: '상황별 대처법',
+                    situation1: '상황 1: 신천지 포교자를 만났을 때',
+                    commonMistake: '❌ 흔한 실수',
+                    correctResponse: '✓ 올바른 대처'
+                },
+                
+                tab3: {
+                    title: '유럽에서의 신천지 현황',
+                    parisSection: '프랑스(파리)',
+                    berlinSection: '독일(베를린)',
+                    zurichSection: '스위스(취리히)'
+                },
+                
+                tab4: {
+                    title: '교회 내 발견 및 처리 방법',
+                    scenario1: '시나리오 1: 신천지 신자가 교회에 나타났을 때'
+                }
+            },
+            
+            en: {
+                headerTitle: '🛡️ Shincheonji Response App',
+                headerSubtitle: 'Recognition · Discernment · Action · Evidence',
+                tabNames: ['Recognition', 'Discernment', 'Response', 'Europe Status', 'Church Action'],
+                footer: '© 2024 Shincheonji Response App | Information to Protect Christian Faith',
+                
+                tab0: {
+                    title: 'What is Shincheonji?',
+                    intro: 'Shincheonji (Shincheonji Sanctuary, Temple of the Tabernacle of the Testimony) is a heretical organization originating from South Korea. Though it appears outwardly like a Christian church, it fundamentally rejects core Christian doctrine. Its founder, Lee Man-hee (李萬熙, b. 1931), claims to be a "new Jesus" and interprets the Book of Revelation in ways unique to Shincheonji.',
+                    basicInfo: 'Shincheonji Basic Information',
+                    founded: 'Founded: 1984',
+                    leader: 'Leader: Lee Man-hee (age 93, currently imprisoned)',
+                    hq: 'Headquarters: Gyeonggi Province, South Korea',
+                    scale: 'Size: Over 100,000 members in South Korea (exact statistics kept secret)',
+                    international: 'International Activity: Active in 40+ countries including USA, Australia, Canada, and Europe',
+                    coreTeachings: '6 Core False Doctrines of Shincheonji',
+                    teaching1: '1. The 144,000 Doctrine',
+                    teaching1Desc: 'Interprets Revelation 7 and 14 literally, claiming that exactly 144,000 members of Shincheonji\'s "12 tribes" will be saved, and all others are damned.',
+                    teaching2: '2. Parable-Only Interpretation',
+                    teaching2Desc: 'Claims "true understanding of the Bible requires interpreting all passages as parables" and that only Shincheonji understands the "true meaning," blocking independent thinking.',
+                    teaching3: '3. Lee Man-hee Messianism',
+                    teaching3Desc: 'Calls Lee Man-hee the "New Jesus," "Promised Pastor," and "Returning Christ," deifying him as equal to or greater than Jesus.',
+                    teaching4: '4. Geographic Reinterpretation',
+                    teaching4Desc: 'Reinterprets geographic references in Revelation to center on Korea and Shincheonji (e.g., "East" = Korea, "12 tribes" = Shincheonji\'s organization).',
+                    teaching5: '5. Eschatological Urgency',
+                    teaching5Desc: 'Claims "the Returning Christ has already appeared," creating psychological pressure of imminent end times. This prevents leaving and demands financial contributions and time investment.',
+                    teaching6: '6. Apostasy Doctrine',
+                    teaching6Desc: 'Labels all Christianity outside Shincheonji as "apostate churches," claiming Shincheonji is the only "true church."'
+                },
+                
+                tab1: {
+                    title: 'Distinguishing Shincheonji from Orthodox Christianity',
+                    subtitle: '15 Questions and Answers to Identify Shincheonji',
+                    question: 'Question',
+                    shincheonjiClaim: 'Shincheonji\'s Claim',
+                    dangerousReason: 'Why It\'s Dangerous',
+                    christianAnswer: 'Christian Response'
+                },
+                
+                tab2: {
+                    title: 'Situation-Based Response Strategies',
+                    situation1: 'Situation 1: Encountering a Shincheonji Recruiter',
+                    commonMistake: '❌ Common Mistake',
+                    correctResponse: '✓ Correct Response'
+                },
+                
+                tab3: {
+                    title: 'Shincheonji Activity in Europe',
+                    parisSection: 'France (Paris)',
+                    berlinSection: 'Germany (Berlin)',
+                    zurichSection: 'Switzerland (Zurich)'
+                },
+                
+                tab4: {
+                    title: 'Detection and Response Procedures in Churches',
+                    scenario1: 'Scenario 1: A Shincheonji Member Appears in Your Church'
+                }
+            },
+            
+            de: {
+                headerTitle: '🛡️ Shincheonji-Reaktions-App',
+                headerSubtitle: 'Erkennung · Unterscheidung · Maßnahmen · Beweis',
+                tabNames: ['Erkennung', 'Unterscheidung', 'Reaktion', 'Europa-Status', 'Kirchliche Maßnahmen'],
+                footer: '© 2024 Shincheonji-Reaktions-App | Informationen zum Schutz des christlichen Glaubens',
+                
+                tab0: {
+                    title: 'Was ist Shincheonji?',
+                    intro: 'Shincheonji (Shincheonji-Heiligtum, Tempel der Hütte des Zeugnisses) ist eine häretische Vereinigung südkoreanischen Ursprungs. Äußerlich erscheint sie wie eine christliche Kirche, lehnt aber zentrale christliche Dogmen ab. Gründer Lee Man-hee (李萬熙, geb. 1931) behauptet, der "neue Jesus" zu sein, und interpretiert die Offenbarung auf unkonventionelle Weise.',
+                    basicInfo: 'Grundinformationen zu Shincheonji',
+                    founded: 'Gegründet: 1984',
+                    leader: 'Anführer: Lee Man-hee (93 Jahre alt, derzeit inhaftiert)',
+                    hq: 'Zentrale: Provinz Gyeonggi, Südkorea',
+                    scale: 'Größe: Über 100.000 Mitglieder in Südkorea (genaue Statistiken nicht öffentlich)',
+                    international: 'Internationale Aktivitäten: Aktiv in über 40 Ländern, einschließlich USA, Australien, Kanada und Europa',
+                    coreTeachings: '6 zentrale falsche Lehren der Shincheonji',
+                    teaching1: '1. Die 144.000er-Lehre',
+                    teaching1Desc: 'Interpretiert Offenbarung 7 und 14 buchstäblich und behauptet, dass nur genau 144.000 Mitglieder von Shincheonjis "12 Stämmen" gerettet werden.',
+                    teaching2: '2. Rein-Gleichnis-Interpretation',
+                    teaching2Desc: 'Behauptet, dass das wahre Bibelverständnis nur durch allegorische Interpretation möglich ist, und nur Shincheonji versteht die "wahre Bedeutung".',
+                    teaching3: '3. Lee-Man-hee-Messianismus',
+                    teaching3Desc: 'Nennt Lee Man-hee den "Neuen Jesus", "Verheißenen Pastor" und "Wiederkommenden Christus" und vergöttlicht ihn.',
+                    teaching4: '4. Geografische Neuinterpretation',
+                    teaching4Desc: 'Deutet geografische Verweise in der Offenbarung um, um sie auf Korea und Shincheonji zu zentrieren.',
+                    teaching5: '5. Endzeitliche Dringlichkeit',
+                    teaching5Desc: 'Behauptet, der "Wiederkommende Christus ist bereits erschienen" und erzeugt psychologischen Druck der unmittelbar bevorstehenden Endzeit.',
+                    teaching6: '6. Apostasie-Lehre',
+                    teaching6Desc: 'Etikettiert alle christlichen Kirchen außerhalb der Shincheonji als "abgefallene Kirchen" und behauptet, Shincheonji sei die einzige "wahre Kirche".'
+                },
+                
+                tab1: {
+                    title: 'Unterscheidung zwischen Shincheonji und orthodoxem Christentum',
+                    subtitle: '15 Fragen und Antworten zur Identifizierung der Shincheonji',
+                    question: 'Frage',
+                    shincheonjiClaim: 'Behauptung der Shincheonji',
+                    dangerousReason: 'Warum es gefährlich ist',
+                    christianAnswer: 'Christliche Antwort'
+                },
+                
+                tab2: {
+                    title: 'Situationsspezifische Reaktionsstrategien',
+                    situation1: 'Situation 1: Ein Shincheonji-Rekrutierer wird kontaktiert',
+                    commonMistake: '❌ Häufiger Fehler',
+                    correctResponse: '✓ Richtige Reaktion'
+                },
+                
+                tab3: {
+                    title: 'Shincheonji-Aktivitäten in Europa',
+                    parisSection: 'Frankreich (Paris)',
+                    berlinSection: 'Deutschland (Berlin)',
+                    zurichSection: 'Schweiz (Zürich)'
+                },
+                
+                tab4: {
+                    title: 'Erkennung und Reaktionsverfahren in Kirchen',
+                    scenario1: 'Szenario 1: Ein Shincheonji-Mitglied erscheint in Ihrer Kirche'
+                }
+            },
+            
+            fr: {
+                headerTitle: '🛡️ Application de Réponse à la Shincheonji',
+                headerSubtitle: 'Reconnaissance · Discernement · Action · Preuve',
+                tabNames: ['Reconnaissance', 'Discernement', 'Réponse', 'Statut en Europe', 'Action Ecclésiale'],
+                footer: '© 2024 Application de Réponse à la Shincheonji | Informations pour protéger la foi chrétienne',
+                
+                tab0: {
+                    title: 'Qu\'est-ce que la Shincheonji?',
+                    intro: 'La Shincheonji (Shincheonji Sanctuaire, Temple du Tabernacle du Témoignage) est une organisation hérétique d\'origine sud-coréenne. Bien qu\'elle ressemble superficiellement à une église chrétienne, elle rejette les doctrines fondamentales du christianisme. Son fondateur, Lee Man-hee (李萬熙, né en 1931), prétend être le "nouveau Jésus" et interprète l\'Apocalypse de manière unique.',
+                    basicInfo: 'Informations de base sur la Shincheonji',
+                    founded: 'Fondée: 1984',
+                    leader: 'Chef: Lee Man-hee (93 ans, actuellement emprisonné)',
+                    hq: 'Siège social: Province de Gyeonggi, Corée du Sud',
+                    scale: 'Taille: Plus de 100 000 membres en Corée du Sud (statistiques exactes confidentielles)',
+                    international: 'Activités internationales: Actif dans plus de 40 pays, dont USA, Australie, Canada et Europe',
+                    coreTeachings: '6 fausses doctrines fondamentales de la Shincheonji',
+                    teaching1: '1. La doctrine des 144 000',
+                    teaching1Desc: 'Interprète littéralement l\'Apocalypse 7 et 14, affirmant que seuls exactement 144 000 membres des "12 tribus" de la Shincheonji seront sauvés.',
+                    teaching2: '2. Interprétation par paraboles uniquement',
+                    teaching2Desc: 'Prétend que la vraie compréhension biblique nécessite une interprétation allégorique, et seule la Shincheonji comprend le "vrai sens".',
+                    teaching3: '3. Messianisme de Lee Man-hee',
+                    teaching3Desc: 'Appelle Lee Man-hee le "Nouveau Jésus", "Pasteur promis" et "Christ ressuscité", le divinisant.',
+                    teaching4: '4. Réinterprétation géographique',
+                    teaching4Desc: 'Réinterprète les références géographiques de l\'Apocalypse pour les centrer sur la Corée et la Shincheonji.',
+                    teaching5: '5. Urgence eschatologique',
+                    teaching5Desc: 'Prétend que le "Christ ressuscité est déjà apparu", créant une pression psychologique d\'une fin des temps imminente.',
+                    teaching6: '6. Doctrine de l\'apostasie',
+                    teaching6Desc: 'Qualifie toutes les églises chrétiennes en dehors de la Shincheonji d\'"églises apostatiques" et prétend que la Shincheonji est la seule "vraie église".'
+                },
+                
+                tab1: {
+                    title: 'Distinguer la Shincheonji du christianisme orthodoxe',
+                    subtitle: '15 questions et réponses pour identifier la Shincheonji',
+                    question: 'Question',
+                    shincheonjiClaim: 'Affirmation de la Shincheonji',
+                    dangerousReason: 'Pourquoi c\'est dangereux',
+                    christianAnswer: 'Réponse chrétienne'
+                },
+                
+                tab2: {
+                    title: 'Stratégies de réponse adaptées aux situations',
+                    situation1: 'Situation 1: Rencontre avec un recruteur de la Shincheonji',
+                    commonMistake: '❌ Erreur courante',
+                    correctResponse: '✓ Réponse correcte'
+                },
+                
+                tab3: {
+                    title: 'Activités de la Shincheonji en Europe',
+                    parisSection: 'France (Paris)',
+                    berlinSection: 'Allemagne (Berlin)',
+                    zurichSection: 'Suisse (Zurich)'
+                },
+                
+                tab4: {
+                    title: 'Détection et procédures de réponse dans les églises',
+                    scenario1: 'Scénario 1: Un membre de la Shincheonji apparaît dans votre église'
+                }
+            },
+            
+            de_ch: {
+                headerTitle: '🛡️ Shincheonji-Reaktions-App',
+                headerSubtitle: 'Erkennung · Unterscheidung · Massnahmen · Beweis',
+                tabNames: ['Erkennung', 'Unterscheidung', 'Reaktion', 'Europa-Status', 'Kirchliche Massnahmen'],
+                footer: '© 2024 Shincheonji-Reaktions-App | Informationen zum Schutz des christlichen Glaubens',
+                
+                tab0: {
+                    title: 'Was ist Shincheonji?',
+                    intro: 'Shincheonji (Shincheonji-Heiligtum, Tempel der Hütte des Zeugnisses) ist eine häretische Vereinigung südkoreanischen Ursprungs. Äusserlich wirkt sie wie eine christliche Kirche, lehnt aber zentrale christliche Dogmen ab. Gründer Lee Man-hee (李萬熙, geb. 1931) behauptet, der "neue Jesus" zu sein, und interpretiert die Offenbarung auf unkonventionelle Weise.',
+                    basicInfo: 'Grundinformationen zu Shincheonji',
+                    founded: 'Gegründet: 1984',
+                    leader: 'Anführer: Lee Man-hee (93 Jahre alt, derzeit inhaftiert)',
+                    hq: 'Zentrale: Provinz Gyeonggi, Südkorea',
+                    scale: 'Grösse: Über 100.000 Mitglieder in Südkorea (genaue Statistiken nicht öffentlich)',
+                    international: 'Internationale Aktivitäten: Aktiv in über 40 Ländern, einschliesslich USA, Australien, Kanada und Europa',
+                    coreTeachings: '6 zentrale falsche Lehren der Shincheonji',
+                    teaching1: '1. Die 144.000er-Lehre',
+                    teaching1Desc: 'Interpretiert Offenbarung 7 und 14 buchstäblich und behauptet, dass nur genau 144.000 Mitglieder von Shincheonjis "12 Stämmen" gerettet werden.',
+                    teaching2: '2. Rein-Gleichnis-Interpretation',
+                    teaching2Desc: 'Behauptet, dass das wahre Bibelverständnis nur durch allegorische Interpretation möglich ist, und nur Shincheonji versteht die "wahre Bedeutung".',
+                    teaching3: '3. Lee-Man-hee-Messianismus',
+                    teaching3Desc: 'Nennt Lee Man-hee den "Neuen Jesus", "Verheissenen Pastor" und "Wiederkommenden Christus" und vergöttlicht ihn.',
+                    teaching4: '4. Geografische Neuinterpretation',
+                    teaching4Desc: 'Deutet geografische Verweise in der Offenbarung um, um sie auf Korea und Shincheonji zu zentrieren.',
+                    teaching5: '5. Endzeitliche Dringlichkeit',
+                    teaching5Desc: 'Behauptet, der "Wiederkommende Christus ist bereits erschienen" und erzeugt psychologischen Druck der unmittelbar bevorstehenden Endzeit.',
+                    teaching6: '6. Apostasie-Lehre',
+                    teaching6Desc: 'Etikettiert alle christlichen Kirchen ausserhalb der Shincheonji als "abgefallene Kirchen" und behauptet, Shincheonji sei die einzige "wahre Kirche".'
+                },
+                
+                tab1: {
+                    title: 'Unterscheidung zwischen Shincheonji und orthodoxem Christentum',
+                    subtitle: '15 Fragen und Antworten zur Identifizierung der Shincheonji',
+                    question: 'Frage',
+                    shincheonjiClaim: 'Behauptung der Shincheonji',
+                    dangerousReason: 'Warum es gefährlich ist',
+                    christianAnswer: 'Christliche Antwort'
+                },
+                
+                tab2: {
+                    title: 'Situationsspezifische Reaktionsstrategien',
+                    situation1: 'Situation 1: Ein Shincheonji-Rekrutierer wird kontaktiert',
+                    commonMistake: '❌ Häufiger Fehler',
+                    correctResponse: '✓ Richtige Reaktion'
+                },
+                
+                tab3: {
+                    title: 'Shincheonji-Aktivitäten in Europa',
+                    parisSection: 'Frankreich (Paris)',
+                    berlinSection: 'Deutschland (Berlin)',
+                    zurichSection: 'Schweiz (Zürich)'
+                },
+                
+                tab4: {
+                    title: 'Erkennung und Reaktionsverfahren in Kirchen',
+                    scenario1: 'Szenario 1: Ein Shincheonji-Mitglied erscheint in Ihrer Kirche'
+                }
+            }
+        };
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update header
+            document.getElementById('headerTitle').textContent = translations[lang].headerTitle;
+            document.getElementById('headerSubtitle').textContent = translations[lang].headerSubtitle;
+            
+            // Update tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((tab, index) => {
+                tab.textContent = translations[lang].tabNames[index];
+            });
+            
+            // Update footer
+            document.getElementById('footer').textContent = translations[lang].footer;
+            
+            // Update tab contents (simplified for demo)
+            renderTab0();
+        }
+        
+        function renderTab0() {
+            const lang = currentLanguage;
+            const t = translations[lang].tab0;
+            let html = `
+                <div class="section">
+                    <h2>${t.title}</h2>
+                    <div class="info-box">
+                        <strong>Shincheonji</strong> ${t.intro}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>${t.basicInfo}</h2>
+                    <ul class="checklist">
+                        <li><strong>${t.founded}</strong></li>
+                        <li><strong>${t.leader}</strong></li>
+                        <li><strong>${t.hq}</strong></li>
+                        <li><strong>${t.scale}</strong></li>
+                        <li><strong>${t.international}</strong></li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h2>${t.coreTeachings}</h2>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching1}</strong><br>
+                        ${t.teaching1Desc}
+                    </div>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching2}</strong><br>
+                        ${t.teaching2Desc}
+                    </div>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching3}</strong><br>
+                        ${t.teaching3Desc}
+                    </div>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching4}</strong><br>
+                        ${t.teaching4Desc}
+                    </div>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching5}</strong><br>
+                        ${t.teaching5Desc}
+                    </div>
+                    <div class="red-flag-item">
+                        <strong>${t.teaching6}</strong><br>
+                        ${t.teaching6Desc}
+                    </div>
+                </div>
+            `;
+            document.getElementById('tab0').innerHTML = html;
+        }
+        
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+            document.querySelectorAll('.tab-content')[tabIndex].classList.add('active');
+            window.scrollTo(0, 0);
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            renderTab0();
+            document.getElementById('footer').textContent = translations['ko'].footer;
+        });
+    </script>
+</body>
+</html>
